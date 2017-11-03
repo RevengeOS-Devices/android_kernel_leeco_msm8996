@@ -38,25 +38,40 @@ ENTRY(__ashlti3)
 ENDPROC(__ashlti3)
 
 ENTRY(__ashrti3)
+<<<<<<< HEAD
 	cbz	x2, 1f
 	mov	x3, #64
 	sub	x3, x3, x2
 	cmp	x3, #0
 	b.le	2f
+=======
+	cbz	x2, 3f
+	mov	x3, #64
+	sub	x3, x3, x2
+	cmp	x3, #0
+	b.le	4f
+>>>>>>> fe334d8863e2... BACKPORT: arm64: support __int128 on gcc 5+
 	lsr	x0, x0, x2
 	lsl	x3, x1, x3
 	asr	x2, x1, x2
 	orr	x0, x0, x3
 	mov	x1, x2
+<<<<<<< HEAD
 1:
 	ret
 2:
+=======
+3:
+	ret
+4:
+>>>>>>> fe334d8863e2... BACKPORT: arm64: support __int128 on gcc 5+
 	neg	w0, w3
 	asr	x2, x1, #63
 	asr	x0, x1, x0
 	mov	x1, x2
 	ret
 ENDPROC(__ashrti3)
+<<<<<<< HEAD
 
 ENTRY(__lshrti3)
 	cbz	x2, 1f
@@ -78,3 +93,5 @@ ENTRY(__lshrti3)
 	mov	x1, x2
 	ret
 ENDPROC(__lshrti3)
+=======
+>>>>>>> fe334d8863e2... BACKPORT: arm64: support __int128 on gcc 5+
