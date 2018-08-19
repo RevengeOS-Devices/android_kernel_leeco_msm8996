@@ -290,9 +290,9 @@ enum power_supply_type {
 	POWER_SUPPLY_TYPE_USB_ACA,	/* Accessory Charger Adapters */
 	POWER_SUPPLY_TYPE_USB_HVDCP,	/* High Voltage DCP */
 	POWER_SUPPLY_TYPE_USB_HVDCP_3,	/* Efficient High Voltage DCP */
-	POWER_SUPPLY_TYPE_USB_PD,	/* Power Delivery */
 #ifdef CONFIG_MACH_LEECO_PD
-	POWER_SUPPLY_TYPE_USB_LE_PD,	/* LeTV PD Charger */
+	POWER_SUPPLY_TYPE_USB_PD,	/* Power Delivery */
+	POWER_SUPPLY_TYPE_USB_LE_PD,	/* LeTV Power Delivery */
 #endif
 	POWER_SUPPLY_TYPE_WIRELESS,	/* Accessory Charger Adapters */
 	POWER_SUPPLY_TYPE_USB_FLOAT,	/* Floating charger */
