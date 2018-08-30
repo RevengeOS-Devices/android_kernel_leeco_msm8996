@@ -2607,6 +2607,7 @@ static int update_sram_data(struct fg_chip *chip, int *resched_ms)
 			fg_data[i].value = div_s64(
 					(s64)temp * LSB_16B_NUMRTR,
 					LSB_16B_DENMTR);
+            pr_err("curr_now=%d\n",fg_data[i].value);
 			break;
 		case FG_DATA_BATT_ESR:
 			fg_data[i].value = float_decode((u16) temp);
@@ -2625,6 +2626,7 @@ static int update_sram_data(struct fg_chip *chip, int *resched_ms)
 		case FG_DATA_BATT_SOC:
 			fg_data[i].value = div64_s64((temp * 10000),
 							FULL_PERCENT_3B);
+            pr_err("cap_now=%d\n",fg_data[i].value);
 			break;
 		case FG_DATA_CC_CHARGE:
 			temp = twos_compliment_extend(temp, fg_data[i].len);
