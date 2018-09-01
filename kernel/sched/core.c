@@ -3490,8 +3490,10 @@ int sched_set_window(u64 window_start, unsigned int window_size)
 	unsigned long flags;
 
 	if (sched_use_pelt ||
-		 (window_size * TICK_NSEC <  MIN_SCHED_RAVG_WINDOW))
+		 (window_size * TICK_NSEC <  MIN_SCHED_RAVG_WINDOW)) {
+            pr_err("sched_set_window failed:%d,%d", sched_use_pelt,window_size);
 			return -EINVAL;
+    }
 
 	mutex_lock(&policy_mutex);
 
