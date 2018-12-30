@@ -66,13 +66,8 @@ static void sdv_pm_wakeup_event(int line, struct device *dev, int timeout);
 
 
 #define DWC3_IDEV_CHG_MAX 1500
-#ifdef CONFIG_VENDOR_LEECO
 #define DWC3_HVDCP_CHG_MAX 2000
-#define DWC3_WAKEUP_SRC_TIMEOUT 500
-#else
-#define DWC3_HVDCP_CHG_MAX 1800
 #define DWC3_WAKEUP_SRC_TIMEOUT 5000
-#endif
 #define MICRO_5V    5000000
 #define MICRO_9V    9000000
 
@@ -2393,9 +2388,9 @@ static void dwc3_ext_event_notify(struct dwc3_msm *mdwc)
 		return;
 	}
 
-	if( mdwc->in_host_mode || mdwc->vbus_active ) {
-		sdv_pm_stay_awake(2,mdwc->dev);
-	}
+    if( mdwc->in_host_mode || mdwc->vbus_active ) {
+    	sdv_pm_stay_awake(2,mdwc->dev);
+    }
 	queue_delayed_work(mdwc->sm_usb_wq, &mdwc->sm_work, 0);
 }
 
@@ -2610,11 +2605,11 @@ int pi5usb_set_msm_usb_host_mode(bool mode)
         if (mode) {
                 /* host mode:bsv=0,id=0 */
                 //mdwc->ext_xceiv.id = false;
-		mdwc->id_state = DWC3_ID_GROUND;
+    		mdwc->id_state = DWC3_ID_GROUND;
         } else {
                 /* device mode:bsv=1,id=1 */
                 //mdwc->ext_xceiv.id = true;
-		mdwc->id_state = DWC3_ID_FLOAT;
+	    	mdwc->id_state = DWC3_ID_FLOAT;
         }
 
         if (atomic_read(&dwc->in_lpm)) {
@@ -2626,7 +2621,7 @@ int pi5usb_set_msm_usb_host_mode(bool mode)
                 //        mdwc->ext_xceiv.notify_ext_events(mdwc->otg_xceiv->otg,
                 //                                        DWC3_EVENT_XCEIV_STATE);
 
-		dwc3_ext_event_notify(mdwc);
+    		dwc3_ext_event_notify(mdwc);
         }
 
         return mode;
@@ -2682,7 +2677,9 @@ get_prop_usbin_voltage_now(struct dwc3_msm *mdwc)
 		return results.physical;
 	}
 }
+#endif
 
+#ifdef CONFIG_VENDOR_LEECO
 extern void letv_pd_set_typec_temperature(int temp);
 /*
  * Function to read Type-C temp
@@ -2972,6 +2969,8 @@ static enum power_supply_property dwc3_msm_pm_power_props_usb[] = {
 	POWER_SUPPLY_PROP_REAL_TYPE,
 #ifdef CONFIG_VENDOR_LEECO
 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+#endif
+#ifdef CONFIG_VENDOR_LEECO
 	POWER_SUPPLY_PROP_LE_USBIN_TEMP,
 	POWER_SUPPLY_PROP_LE_VPH_VOLTAGE,
 #endif
@@ -3686,7 +3685,9 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 		mdwc->id_state = DWC3_ID_GROUND;
 		dwc3_ext_event_notify(mdwc);
 	}
+
 	_msm_dwc = mdwc;
+
 	return 0;
 
 put_dwc3:
@@ -4694,6 +4695,7 @@ static int dwc3_msm_pm_suspend(struct device *dev)
 
 	dbg_event(0xFF, "vbus_active", mdwc->vbus_active);
 	dbg_event(0xFF, "otg_state", mdwc->otg_state);
+
 	return ret;
 }
 
