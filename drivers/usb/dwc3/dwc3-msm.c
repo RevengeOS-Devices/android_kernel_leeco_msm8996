@@ -61,7 +61,11 @@
 
 #define DWC3_IDEV_CHG_MAX 1500
 #define DWC3_HVDCP_CHG_MAX 1800
+#ifdef CONFIG_MACH_LEECO
+#define DWC3_WAKEUP_SRC_TIMEOUT 1000
+#else
 #define DWC3_WAKEUP_SRC_TIMEOUT 5000
+#endif
 #define MICRO_5V    5000000
 #define MICRO_9V    9000000
 
@@ -2580,6 +2584,45 @@ int msm_usb_vbus_set(struct dwc3_msm *_mdwc, bool on, bool ext_call)
 	return ret;
 }
 EXPORT_SYMBOL(msm_usb_vbus_set);
+
+int pi5usb_set_msm_usb_host_mode(bool mode)
+{
+        struct dwc3_msm *mdwc = NULL;
+        struct dwc3 *dwc = NULL;
+
+        if (NULL == _msm_dwc)
+                return -ENODEV;
+
+        mdwc = _msm_dwc;
+        dwc = platform_get_drvdata(mdwc->dwc3);
+
+        dev_err(mdwc->dev, "%s = %s_mode.\n", __func__, mode?"host":"device");
+
+        if (mode) {
+                /* host mode:bsv=0,id=0 */
+                //mdwc->ext_xceiv.id = false;
+		mdwc->id_state = DWC3_ID_GROUND;
+        } else {
+                /* device mode:bsv=1,id=1 */
+                //mdwc->ext_xceiv.id = true;
+		mdwc->id_state = DWC3_ID_FLOAT;
+        }
+
+        if (atomic_read(&dwc->in_lpm)) {
+                dev_dbg(mdwc->dev, "%s: calling resume_work\n", __func__);
+        	dwc3_resume_work(&mdwc->resume_work.work);
+        } else {
+                dev_dbg(mdwc->dev, "%s: notifying xceiv event\n", __func__);
+                //if (mdwc->otg_xceiv)
+                //        mdwc->ext_xceiv.notify_ext_events(mdwc->otg_xceiv->otg,
+                //                                        DWC3_EVENT_XCEIV_STATE);
+
+		dwc3_ext_event_notify(mdwc);
+        }
+
+        return mode;
+}
+EXPORT_SYMBOL(pi5usb_set_msm_usb_host_mode);
 #endif
 
 static irqreturn_t msm_dwc3_pwr_irq(int irq, void *data)
@@ -2630,9 +2673,7 @@ get_prop_usbin_voltage_now(struct dwc3_msm *mdwc)
 		return results.physical;
 	}
 }
-#endif
 
-#ifdef CONFIG_MACH_LEECO_PD
 extern void letv_pd_set_typec_temperature(int temp);
 /*
  * Function to read Type-C temp
@@ -2721,7 +2762,7 @@ static int dwc3_msm_power_get_property_usb(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_USB_OTG:
 		val->intval = !mdwc->id_state;
 		break;
-#ifdef CONFIG_MACH_LEECO_PD
+#ifdef CONFIG_MACH_LEECO
 	case POWER_SUPPLY_PROP_LE_USBIN_TEMP:
 		val->intval = get_prop_usbin_temp_now(mdwc);
 		break;
@@ -2922,8 +2963,6 @@ static enum power_supply_property dwc3_msm_pm_power_props_usb[] = {
 	POWER_SUPPLY_PROP_REAL_TYPE,
 #ifdef CONFIG_MACH_LEECO
 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-#endif
-#ifdef CONFIG_MACH_LEECO_PD
 	POWER_SUPPLY_PROP_LE_USBIN_TEMP,
 	POWER_SUPPLY_PROP_LE_VPH_VOLTAGE,
 #endif
@@ -3638,9 +3677,7 @@ static int dwc3_msm_probe(struct platform_device *pdev)
 		mdwc->id_state = DWC3_ID_GROUND;
 		dwc3_ext_event_notify(mdwc);
 	}
-
 	_msm_dwc = mdwc;
-
 	return 0;
 
 put_dwc3:
@@ -4648,7 +4685,6 @@ static int dwc3_msm_pm_suspend(struct device *dev)
 
 	dbg_event(0xFF, "vbus_active", mdwc->vbus_active);
 	dbg_event(0xFF, "otg_state", mdwc->otg_state);
-
 	return ret;
 }
 
