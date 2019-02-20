@@ -165,16 +165,14 @@
 			compatible = "android,firmware";
 			fstab {
 				compatible = "android,fstab";
-#if defined CONFIG_LEECO_TREBLE
 				vendor {
 					compatible = "android,vendor";
-                                        dev = "/dev/block/platform/soc/624000.ufshc/by-name/vendor";
+					dev = "/dev/block/platform/soc/624000.ufshc/by-name/vendor";
 					type = "ext4";
 					mnt_flags = "ro,barrier=1,discard,nodelalloc,noatime";
 					fsmgr_flags = "wait";
 					status = "ok";
-                                };
-#endif
+				};
 				system {
 					compatible = "android,system";
 					dev = "/dev/block/platform/soc/624000.ufshc/by-name/system";
