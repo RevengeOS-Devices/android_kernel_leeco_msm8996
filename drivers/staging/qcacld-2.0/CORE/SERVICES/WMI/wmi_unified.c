@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2018 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2014-2019 The Linux Foundation. All rights reserved.
  *
  * Previously licensed under the ISC license by Qualcomm Atheros, Inc.
  *
@@ -794,7 +794,22 @@ static u_int8_t* get_wmi_cmd_string(WMI_CMD_ID wmi_command)
 		CASE_RETURN_STRING(WMI_MOTION_DET_START_STOP_CMDID);
 		CASE_RETURN_STRING(WMI_MOTION_DET_BASE_LINE_START_STOP_CMDID);
 		CASE_RETURN_STRING(WMI_MOTION_DET_CONFIG_PARAM_CMDID);
-
+		CASE_RETURN_STRING(WMI_PDEV_OBSS_PD_SPATIAL_REUSE_CMDID);
+		CASE_RETURN_STRING(WMI_PEER_CFR_CAPTURE_CMDID);
+		CASE_RETURN_STRING(WMI_PEER_CHAN_WIDTH_SWITCH_CMDID);
+		CASE_RETURN_STRING(WMI_PDEV_OBSS_PD_SPATIAL_REUSE_SET_DEF_OBSS_THRESH_CMDID);
+		CASE_RETURN_STRING(WMI_PDEV_HE_TB_ACTION_FRM_CMDID);
+		CASE_RETURN_STRING(WMI_HPCS_PULSE_START_CMDID);
+		CASE_RETURN_STRING(WMI_VDEV_CHAINMASK_CONFIG_CMDID);
+		CASE_RETURN_STRING(WMI_VDEV_BCN_OFFLOAD_QUIET_CONFIG_CMDID);
+		CASE_RETURN_STRING(WMI_NDP_CMDID);
+		CASE_RETURN_STRING(WMI_PDEV_PKTLOG_FILTER_CMDID);
+		CASE_RETURN_STRING(WMI_VDEV_GET_BCN_RECEPTION_STATS_CMDID);
+		CASE_RETURN_STRING(WMI_PEER_TX_PN_REQUEST_CMDID);
+		CASE_RETURN_STRING(WMI_PEER_UNMAP_RESPONSE_CMDID);
+		CASE_RETURN_STRING(WMI_ROAM_BSS_LOAD_CONFIG_CMDID);
+		CASE_RETURN_STRING(WMI_VDEV_GET_MWS_COEX_INFO_CMDID);
+		CASE_RETURN_STRING(WMI_REQUEST_WLM_STATS_CMDID);
 	}
 	return "Invalid WMI cmd";
 }
@@ -928,7 +943,6 @@ int wmi_unified_cmd_send(wmi_unified_t wmi_handle, wmi_buf_t buf, int len,
 	void *vos_context;
 	struct ol_softc *scn;
 	A_UINT16 htc_tag = 0;
-	int ret;
 
 	if (vos_is_shutdown_in_progress(VOS_MODULE_ID_WDA, NULL)) {
 		adf_os_print("\nERROR: %s: shutdown is in progress so could not send WMI command: %d\n",
@@ -936,9 +950,6 @@ int wmi_unified_cmd_send(wmi_unified_t wmi_handle, wmi_buf_t buf, int len,
 		return -EBUSY;
 	}
 
-	vos_context = vos_get_global_context(VOS_MODULE_ID_WDA, NULL);
-	scn = vos_get_context(VOS_MODULE_ID_HIF, vos_context);
-	adf_os_mutex_acquire(scn->adf_dev, &wmi_handle->wmi_mutex);
 	if (wmi_get_runtime_pm_inprogress(wmi_handle))
 		goto skip_suspend_check;
 
@@ -948,8 +959,7 @@ int wmi_unified_cmd_send(wmi_unified_t wmi_handle, wmi_buf_t buf, int len,
 		adf_os_print("\nERROR: %s: Target is suspended  could not send WMI command: %d\n",
 				__func__, cmd_id);
 		VOS_ASSERT(0);
-		ret = -EBUSY;
-		goto error;
+		return -EBUSY;
 	} else
 		goto dont_tag;
 
@@ -966,22 +976,22 @@ dont_tag:
 		{
 			adf_os_print("\nERROR: %s: Invalid WMI Parameter Buffer for Cmd:%d\n",
 				     __func__, cmd_id);
-			ret = -EINVAL;
-			goto error;
+			return -1;
 		}
 	}
 
 	if (adf_nbuf_push_head(buf, sizeof(WMI_CMD_HDR)) == NULL) {
 		pr_err("%s, Failed to send cmd %x, no memory\n",
 		       __func__, cmd_id);
-		ret = -ENOMEM;
-		goto error;
+		return -ENOMEM;
 	}
 
 	WMI_SET_FIELD(adf_nbuf_data(buf), WMI_CMD_HDR, COMMANDID, cmd_id);
 
 	adf_os_atomic_inc(&wmi_handle->pending_cmds);
 	if (adf_os_atomic_read(&wmi_handle->pending_cmds) >= WMI_MAX_CMDS) {
+		vos_context = vos_get_global_context(VOS_MODULE_ID_WDA, NULL);
+		scn = vos_get_context(VOS_MODULE_ID_HIF, vos_context);
 		pr_err("\n%s: hostcredits = %d\n", __func__,
 		       wmi_get_host_credits(wmi_handle));
 		HTC_dump_counter_info(wmi_handle->htc_handle);
@@ -994,15 +1004,14 @@ dont_tag:
 			if (vos_is_logp_in_progress(VOS_MODULE_ID_VOSS, NULL)) {
 				pr_err("%s- %d: SSR is in progress!!!!\n",
 					 __func__, __LINE__);
-				ret = -EBUSY;
-				goto error;
+				return -EBUSY;
 			}
 			vos_trigger_recovery(true);
+		} else if (scn && scn->adf_dev) {
+			vos_device_crashed(scn->adf_dev->dev);
 		} else
 			VOS_BUG(0);
-
-		ret = -EBUSY;
-		goto error;
+		return -EBUSY;
 	}
 
 	pkt = adf_os_mem_alloc(NULL, sizeof(*pkt));
@@ -1010,8 +1019,7 @@ dont_tag:
 		adf_os_atomic_dec(&wmi_handle->pending_cmds);
 		pr_err("%s, Failed to alloc htc packet %x, no memory\n",
 		       __func__, cmd_id);
-		ret = -ENOMEM;
-		goto error;
+		return -ENOMEM;
 	}
 
 	SET_HTC_PACKET_INFO_TX(pkt,
@@ -1041,11 +1049,8 @@ dont_tag:
 		pr_err("%s %d, HTCSendPkt failed\n", __func__, __LINE__);
 	}
 
-	adf_os_mutex_release(scn->adf_dev, &wmi_handle->wmi_mutex);
+
 	return ((status == A_OK) ? EOK : -1);
-error:
-	adf_os_mutex_release(scn->adf_dev, &wmi_handle->wmi_mutex);
-	return ret;
 }
 
 
@@ -1355,8 +1360,6 @@ wmi_unified_attach(ol_scn_t scn_handle, wma_wow_tx_complete_cbk func)
     adf_os_spinlock_init(&wmi_handle->wmi_record_lock);
 #endif
     wmi_handle->wma_wow_tx_complete_cbk = func;
-
-    adf_os_init_mutex(&wmi_handle->wmi_mutex);
     return wmi_handle;
 }
 
