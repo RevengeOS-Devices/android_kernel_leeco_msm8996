@@ -2083,6 +2083,10 @@ static void msm_isp_get_camif_update_state_and_halt(
 	cur_pix_stream_cnt =
 		axi_data->src_info[VFE_PIX_0].pix_stream_count +
 		axi_data->src_info[VFE_PIX_0].raw_stream_count;
+
+	if (stream_cfg_cmd->num_streams > VFE_AXI_SRC_MAX)
+		return;
+
 	for (i = 0; i < stream_cfg_cmd->num_streams; i++) {
 		stream_info =
 			&axi_data->stream_info[
@@ -2999,7 +3003,7 @@ int msm_isp_cfg_axi_stream(struct vfe_device *vfe_dev, void *arg)
 	int rc = 0, ret;
 	struct msm_vfe_axi_stream_cfg_cmd *stream_cfg_cmd = arg;
 	struct msm_vfe_axi_shared_data *axi_data = &vfe_dev->axi_data;
-	enum msm_isp_camif_update_state camif_update;
+	enum msm_isp_camif_update_state camif_update = DISABLE_CAMIF;
 	int halt = 0;
 
 	rc = msm_isp_axi_check_stream_state(vfe_dev, stream_cfg_cmd);
