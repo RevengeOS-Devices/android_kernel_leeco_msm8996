@@ -422,8 +422,8 @@
 
 &pmi8994_fg {
 	qcom,battery-data = <&le_batterydata>;
-	qcom,warm-bat-decidegc = <450>;
-	qcom,hot-bat-decidegc = <500>;
+	qcom,warm-bat-decidegc = <435>;
+	qcom,hot-bat-decidegc = <470>;
 	qcom,cool-bat-decidegc = <150>;
 	qcom,cold-bat-decidegc = <0>;
 	qcom,fg-iterm-ma = <320>;
