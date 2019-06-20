@@ -22,7 +22,7 @@
 #include "state_machine.h"
 
 #define CHUNK_SIZE				(1024)
-#define BLOCK_SIZE				(512)
+#define FW_BLOCK_SIZE				(512)
 #define MAX_REMOTE_FW_UPDATE_PERCENT_LENGTH	(4)
 #define REMOTE_FW_UPDATE_TIME			(10*60*1000)
 
@@ -233,12 +233,12 @@ static enum sii_os_status remote_fw_update_send_chunk_data(uint8_t *data,
 	if (SII_OS_STATUS_SUCCESS != retval)
 		goto done;
 
-	block_num = size / BLOCK_SIZE;
-	trail_length = size % BLOCK_SIZE;
+	block_num = size / FW_BLOCK_SIZE;
+	trail_length = size % FW_BLOCK_SIZE;
 	for (i = 0; i < block_num; i++) {
 		retval = send_hostmsg_command(
 				(uint16_t)HM_RMT_FW_UPDATE_DATA_SEND,
-				BLOCK_SIZE, data + i * BLOCK_SIZE,
+				FW_BLOCK_SIZE, data + i * FW_BLOCK_SIZE,
 				HM_RMT_FW_UPDATE_DATA_SEND_RESPONSE_TIMEOUT,
 				NULL, NULL);
 		if (SII_OS_STATUS_SUCCESS != retval)
@@ -247,7 +247,7 @@ static enum sii_os_status remote_fw_update_send_chunk_data(uint8_t *data,
 	if (trail_length > 0) {
 		retval = send_hostmsg_command(
 				(uint16_t)HM_RMT_FW_UPDATE_DATA_SEND,
-				trail_length, data + block_num * BLOCK_SIZE,
+				trail_length, data + block_num * FW_BLOCK_SIZE,
 				HM_RMT_FW_UPDATE_DATA_SEND_RESPONSE_TIMEOUT,
 				NULL, NULL);
 		if (SII_OS_STATUS_SUCCESS != retval)

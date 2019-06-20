@@ -3912,12 +3912,10 @@ void slimport_hdcp_repeater_reauth(void)
 					    &hdcp_staus);
 
 				if (((hdcp_staus & SP_TX_HDCP_AUTH_PASS) == 0)
-				    & ((hdcp_staus & SP_TX_HDCP_AUTH_FAIL) ==
-				       1)) {
+				    & (hdcp_staus & SP_TX_HDCP_AUTH_FAIL)) {
 					assisted_HDCP_repeater = HDCP_ERROR;
 					pr_info("Clean HDCP and re-auth\n");
-				} else if ((hdcp_staus & SP_TX_HDCP_AUTH_PASS)
-					   == 1) {
+				} else if (hdcp_staus & SP_TX_HDCP_AUTH_PASS) {
 					pr_info
 					    ("$$$$$HDCP Pass$$$$$\n");
 				}
