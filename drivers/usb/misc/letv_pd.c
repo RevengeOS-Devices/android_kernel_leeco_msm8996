@@ -1054,24 +1054,6 @@ static int letv_pd_message_dr_swap_accept(void)
 	return 0;
 }
 
-static int letv_pd_message_dr_swap_reject(void)
-{
-	pr_err("%s:DEBUG: entry\n", __func__);
-	return 0;
-}
-
-static int letv_pd_message_dr_swap_wait(void)
-{
-	pr_err("%s:DEBUG: entry\n", __func__);
-	return 0;
-}
-
-static int letv_pd_message_dr_swap_noresponse(void)
-{
-	pr_err("%s:DEBUG: entry\n", __func__);
-	return 0;
-}
-
 static int letv_pd_message_handle_dr_swap(struct hpi_msg *msg)
 {
 	unsigned char data;
@@ -1086,15 +1068,6 @@ static int letv_pd_message_handle_dr_swap(struct hpi_msg *msg)
 	if ((data & 0xF0) == 0) {
 		/* DR SWAP accept */
 		letv_pd_message_dr_swap_accept();
-	} else if ((data & 0XF0) == 1) {
-		/* DR SWAP reject */
-		letv_pd_message_dr_swap_reject();
-	} else if ((data & 0xF0) == 2) {
-		/* DR SWAP wait */
-		letv_pd_message_dr_swap_wait();
-	} else if ((data & 0xF0) == 3) {
-		/* DR SWAP not response */
-		letv_pd_message_dr_swap_noresponse();
 	} else {
 		pr_err("%s:DEBUG: dr swap hard reset\n", __func__);
 	}
@@ -1105,24 +1078,6 @@ static int letv_pd_message_handle_dr_swap(struct hpi_msg *msg)
 
 /***********************pr swap handle start***********************/
 static int letv_pd_message_pr_swap_accept(void)
-{
-	pr_err("%s:DEBUG: entry\n", __func__);
-	return 0;
-}
-
-static int letv_pd_message_pr_swap_reject(void)
-{
-	pr_err("%s:DEBUG: entry\n", __func__);
-	return 0;
-}
-
-static int letv_pd_message_pr_swap_wait(void)
-{
-	pr_err("%s:DEBUG: entry\n", __func__);
-	return 0;
-}
-
-static int letv_pd_message_pr_swap_noresponse(void)
 {
 	pr_err("%s:DEBUG: entry\n", __func__);
 	return 0;
@@ -1141,15 +1096,6 @@ static int letv_pd_message_handle_pr_swap(struct hpi_msg *msg)
 	if ((data & 0xF0) == 0) {
 		/* PR SWAP accept */
 		letv_pd_message_pr_swap_accept();
-	} else if ((data & 0XF0) == 1) {
-		/* PR  SWAP reject */
-		letv_pd_message_pr_swap_reject();
-	} else if ((data & 0xF0) == 2) {
-		/* PR  SWAP wait */
-		letv_pd_message_pr_swap_wait();
-	} else if ((data & 0xF0) == 3) {
-		/* PR  SWAP not response */
-		letv_pd_message_pr_swap_noresponse();
 	} else {
 		pr_err("%s:DEBUG: pr swap hard reset\n", __func__);
 	}
@@ -1159,24 +1105,6 @@ static int letv_pd_message_handle_pr_swap(struct hpi_msg *msg)
 /***********************pr swap handle end***********************/
 /***********************vconn swap handle start***********************/
 static int letv_pd_message_vconn_swap_accept(void)
-{
-	pr_err("%s:DEBUG: entry\n", __func__);
-	return 0;
-}
-
-static int letv_pd_message_vconn_swap_reject(void)
-{
-	pr_err("%s:DEBUG: entry\n", __func__);
-	return 0;
-}
-
-static int letv_pd_message_vconn_swap_wait(void)
-{
-	pr_err("%s:DEBUG: entry\n", __func__);
-	return 0;
-}
-
-static int letv_pd_message_vconn_swap_noresponse(void)
 {
 	pr_err("%s:DEBUG: entry\n", __func__);
 	return 0;
@@ -1196,15 +1124,6 @@ static int letv_pd_message_handle_vconn_swap(struct hpi_msg *msg)
 	if ((data & 0xF0) == 0) {
 		/* PR SWAP accept */
 		letv_pd_message_vconn_swap_accept();
-	} else if ((data & 0XF0) == 1) {
-		/* PR  SWAP reject */
-		letv_pd_message_vconn_swap_reject();
-	} else if ((data & 0xF0) == 2) {
-		/* PR  SWAP wait */
-		letv_pd_message_vconn_swap_wait();
-	} else if ((data & 0xF0) == 3) {
-		/* PR  SWAP not response */
-		letv_pd_message_vconn_swap_noresponse();
 	} else {
 		pr_err("%s:DEBUG: pr swap hard reset\n", __func__);
 	}
